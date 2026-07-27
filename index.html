@@ -168,6 +168,8 @@
         </div>
 
         <div class="results-column">
+          <atomic-generated-answer></atomic-generated-answer>
+
           <div class="status-row">
             <atomic-query-summary></atomic-query-summary>
             <atomic-sort-dropdown>
@@ -302,6 +304,39 @@
       });
       searchInterface.executeFirstSearch();
     })();
+  </script>
+
+  <script>
+    // Some Pokémon (mostly very recently added ones) don't have official
+    // artwork published on pokemondb yet, so the image URL we computed at
+    // index time 404s. Atomic's result-image renders inside nested shadow
+    // DOM trees, so we recursively look through them and swap any broken
+    // <img> for a cute placeholder instead of leaving a broken-image icon.
+    const POKE_PLACEHOLDER =
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='56' fill='%23ffe1ee' stroke='%23ff9dc4' stroke-width='4'/%3E%3Ctext x='60' y='80' font-size='56' font-family='Baloo 2, sans-serif' font-weight='700' fill='%23ff6fa5' text-anchor='middle'%3E%3F%3C/text%3E%3C/svg%3E";
+
+    function findAllImages(root, found) {
+      root.querySelectorAll('img').forEach((img) => found.push(img));
+      root.querySelectorAll('*').forEach((el) => {
+        if (el.shadowRoot) {
+          findAllImages(el.shadowRoot, found);
+        }
+      });
+    }
+
+    function wireBrokenImageFallbacks() {
+      const images = [];
+      findAllImages(document, images);
+      images.forEach((img) => {
+        if (img.dataset.pokeFallbackWired) return;
+        img.dataset.pokeFallbackWired = 'true';
+        img.addEventListener('error', () => {
+          img.src = POKE_PLACEHOLDER;
+        });
+      });
+    }
+
+    setInterval(wireBrokenImageFallbacks, 500);
   </script>
 </body>
 </html>
