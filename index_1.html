@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pokédex Search</title>
+
+  <!-- Coveo Atomic library (styles + auto-loading script) -->
+  <link rel="stylesheet" href="https://static.cloud.coveo.com/atomic/v3/atomic.css" />
+  <script src="https://static.cloud.coveo.com/atomic/v3/atomic.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f5f5;
+    }
+    header {
+      background: #2c2c54;
+      color: white;
+      padding: 16px 24px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+    .app-container {
+      padding: 16px 24px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Pokédex Search</h1>
+  </header>
+
+  <div class="app-container">
+    <!--
+      Replace YOUR_ORGANIZATION_ID and YOUR_ACCESS_TOKEN below with:
+        - organization-id: your Coveo org ID (Organization > Settings, or the
+          part of the platform URL after /admin/#/ when you're in your org)
+        - access-token: a Search API key created in Organization > API Keys
+          using the "Search pages" key template (safe to expose publicly,
+          it only allows querying)
+    -->
+    <atomic-search-interface
+      id="search"
+      organization-id="arielepokemonchallengew9rn4rh5"
+      access-token="xxe671c8e7-ae8d-42c9-9c04-af5ad6298406"
+    >
+      <atomic-search-layout>
+        <atomic-layout-section section="search">
+          <atomic-search-box></atomic-search-box>
+        </atomic-layout-section>
+
+        <atomic-layout-section section="facets">
+          <atomic-facet-manager>
+            <atomic-facet
+              field="poketype"
+              label="Type"
+              display-values-as="checkbox"
+            ></atomic-facet>
+            <atomic-facet
+              field="pokegen"
+              label="Generation"
+              display-values-as="checkbox"
+            ></atomic-facet>
+          </atomic-facet-manager>
+        </atomic-layout-section>
+
+        <atomic-layout-section section="status">
+          <atomic-breadbox></atomic-breadbox>
+          <atomic-query-summary></atomic-query-summary>
+          <atomic-sort-dropdown>
+            <atomic-sort-expression
+              label="relevance"
+              expression="relevancy"
+            ></atomic-sort-expression>
+            <atomic-sort-expression
+              label="Pokédex number"
+              expression="pokedexnumber ascending"
+            ></atomic-sort-expression>
+          </atomic-sort-dropdown>
+        </atomic-layout-section>
+
+        <atomic-layout-section section="main">
+          <atomic-layout-section section="results">
+            <atomic-result-list
+              display="grid"
+              image-size="small"
+              fields-to-include="pokename,poketype,pokegen,pokeheight,pokeweight,pokespecies,pokedexnumber,pokepic"
+            >
+              <atomic-result-template>
+                <template>
+                  <style>
+                    .poke-card {
+                      display: flex;
+                      flex-direction: column;
+                      align-items: center;
+                      text-align: center;
+                      padding: 12px;
+                    }
+                    .poke-card img {
+                      max-width: 120px;
+                      max-height: 120px;
+                    }
+                    .poke-card .poke-name {
+                      font-weight: bold;
+                      font-size: 16px;
+                      margin-top: 8px;
+                    }
+                  </style>
+                  <div class="poke-card">
+                    <atomic-field-condition if-defined="pokepic">
+                      <atomic-result-image
+                        field="pokepic"
+                        alt="Pokémon artwork"
+                      ></atomic-result-image>
+                    </atomic-field-condition>
+
+                    <div class="poke-name">
+                      <atomic-result-text field="pokename"></atomic-result-text>
+                      (#<atomic-result-number field="pokedexnumber"></atomic-result-number>)
+                    </div>
+
+                    <atomic-result-fields-list>
+                      <atomic-result-field
+                        label="Type"
+                        field="poketype"
+                      ></atomic-result-field>
+                      <atomic-result-field
+                        label="Generation"
+                        field="pokegen"
+                      ></atomic-result-field>
+                      <atomic-result-field
+                        label="Species"
+                        field="pokespecies"
+                      ></atomic-result-field>
+                      <atomic-result-field
+                        label="Height"
+                        field="pokeheight"
+                      ></atomic-result-field>
+                      <atomic-result-field
+                        label="Weight"
+                        field="pokeweight"
+                      ></atomic-result-field>
+                    </atomic-result-fields-list>
+
+                    <atomic-result-link></atomic-result-link>
+                  </div>
+                </template>
+              </atomic-result-template>
+            </atomic-result-list>
+
+            <atomic-query-error></atomic-query-error>
+            <atomic-no-results></atomic-no-results>
+            <atomic-load-more-results></atomic-load-more-results>
+          </atomic-layout-section>
+        </atomic-layout-section>
+      </atomic-search-layout>
+    </atomic-search-interface>
+  </div>
+</body>
+</html>
