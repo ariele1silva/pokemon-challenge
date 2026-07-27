@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pokédex Search</title>
 
-  <!-- Coveo Atomic library (styles + auto-loading script) -->
-  <link rel="stylesheet" href="https://static.cloud.coveo.com/atomic/v3/atomic.css" />
-  <script src="https://static.cloud.coveo.com/atomic/v3/atomic.js"></script>
+  <!-- Coveo Atomic library (confirmed working CDN path, loaded as an ES module) -->
+  <script type="module" src="https://static.cloud.coveo.com/atomic/latest/atomic.esm.js"></script>
+  <link rel="stylesheet" href="https://static.cloud.coveo.com/atomic/latest/themes/coveo.css" />
 
   <style>
     body {
@@ -27,6 +27,28 @@
     .app-container {
       padding: 16px 24px;
     }
+    .search-row {
+      margin-bottom: 16px;
+    }
+    .search-body {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .facets-column {
+      flex: 0 0 240px;
+    }
+    .results-column {
+      flex: 1;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
   </style>
 </head>
 <body>
@@ -35,25 +57,13 @@
   </header>
 
   <div class="app-container">
-    <!--
-      Replace YOUR_ORGANIZATION_ID and YOUR_ACCESS_TOKEN below with:
-        - organization-id: your Coveo org ID (Organization > Settings, or the
-          part of the platform URL after /admin/#/ when you're in your org)
-        - access-token: a Search API key created in Organization > API Keys
-          using the "Search pages" key template (safe to expose publicly,
-          it only allows querying)
-    -->
-    <atomic-search-interface
-      id="search"
-      organization-id="arielepokemonchallengew9rn4rh5"
-      access-token="xxe671c8e7-ae8d-42c9-9c04-af5ad6298406"
-    >
-      <atomic-search-layout>
-        <atomic-layout-section section="search">
-          <atomic-search-box></atomic-search-box>
-        </atomic-layout-section>
+    <atomic-search-interface id="search">
+      <div class="search-row">
+        <atomic-search-box></atomic-search-box>
+      </div>
 
-        <atomic-layout-section section="facets">
+      <div class="search-body">
+        <div class="facets-column">
           <atomic-facet-manager>
             <atomic-facet
               field="poketype"
@@ -66,99 +76,110 @@
               display-values-as="checkbox"
             ></atomic-facet>
           </atomic-facet-manager>
-        </atomic-layout-section>
+        </div>
 
-        <atomic-layout-section section="status">
+        <div class="results-column">
+          <div class="status-row">
+            <atomic-query-summary></atomic-query-summary>
+            <atomic-sort-dropdown>
+              <atomic-sort-expression
+                label="relevance"
+                expression="relevancy"
+              ></atomic-sort-expression>
+              <atomic-sort-expression
+                label="Pokédex number"
+                expression="pokedexnumber ascending"
+              ></atomic-sort-expression>
+            </atomic-sort-dropdown>
+          </div>
+
           <atomic-breadbox></atomic-breadbox>
-          <atomic-query-summary></atomic-query-summary>
-          <atomic-sort-dropdown>
-            <atomic-sort-expression
-              label="relevance"
-              expression="relevancy"
-            ></atomic-sort-expression>
-            <atomic-sort-expression
-              label="Pokédex number"
-              expression="pokedexnumber ascending"
-            ></atomic-sort-expression>
-          </atomic-sort-dropdown>
-        </atomic-layout-section>
 
-        <atomic-layout-section section="main">
-          <atomic-layout-section section="results">
-            <atomic-result-list
-              display="grid"
-              image-size="small"
-              fields-to-include="pokename,poketype,pokegen,pokeheight,pokeweight,pokespecies,pokedexnumber,pokepic"
-            >
-              <atomic-result-template>
-                <template>
-                  <style>
-                    .poke-card {
-                      display: flex;
-                      flex-direction: column;
-                      align-items: center;
-                      text-align: center;
-                      padding: 12px;
-                    }
-                    .poke-card img {
-                      max-width: 120px;
-                      max-height: 120px;
-                    }
-                    .poke-card .poke-name {
-                      font-weight: bold;
-                      font-size: 16px;
-                      margin-top: 8px;
-                    }
-                  </style>
-                  <div class="poke-card">
-                    <atomic-field-condition if-defined="pokepic">
-                      <atomic-result-image
-                        field="pokepic"
-                        alt="Pokémon artwork"
-                      ></atomic-result-image>
-                    </atomic-field-condition>
+          <atomic-result-list
+            display="grid"
+            image-size="small"
+            fields-to-include="pokename,poketype,pokegen,pokeheight,pokeweight,pokespecies,pokedexnumber,pokepic"
+          >
+            <atomic-result-template>
+              <template>
+                <style>
+                  .poke-card {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                    padding: 12px;
+                  }
+                  .poke-card img {
+                    max-width: 120px;
+                    max-height: 120px;
+                  }
+                  .poke-card .poke-name {
+                    font-weight: bold;
+                    font-size: 16px;
+                    margin-top: 8px;
+                  }
+                </style>
+                <div class="poke-card">
+                  <atomic-field-condition if-defined="pokepic">
+                    <atomic-result-image
+                      field="pokepic"
+                      alt="Pokémon artwork"
+                    ></atomic-result-image>
+                  </atomic-field-condition>
 
-                    <div class="poke-name">
-                      <atomic-result-text field="pokename"></atomic-result-text>
-                      (#<atomic-result-number field="pokedexnumber"></atomic-result-number>)
-                    </div>
-
-                    <atomic-result-fields-list>
-                      <atomic-result-field
-                        label="Type"
-                        field="poketype"
-                      ></atomic-result-field>
-                      <atomic-result-field
-                        label="Generation"
-                        field="pokegen"
-                      ></atomic-result-field>
-                      <atomic-result-field
-                        label="Species"
-                        field="pokespecies"
-                      ></atomic-result-field>
-                      <atomic-result-field
-                        label="Height"
-                        field="pokeheight"
-                      ></atomic-result-field>
-                      <atomic-result-field
-                        label="Weight"
-                        field="pokeweight"
-                      ></atomic-result-field>
-                    </atomic-result-fields-list>
-
-                    <atomic-result-link></atomic-result-link>
+                  <div class="poke-name">
+                    <atomic-result-text field="pokename"></atomic-result-text>
+                    (#<atomic-result-number field="pokedexnumber"></atomic-result-number>)
                   </div>
-                </template>
-              </atomic-result-template>
-            </atomic-result-list>
 
-            <atomic-query-error></atomic-query-error>
-            <atomic-no-results></atomic-no-results>
-            <atomic-load-more-results></atomic-load-more-results>
-          </atomic-layout-section>
-        </atomic-layout-section>
-      </atomic-search-layout>
+                  <atomic-result-fields-list>
+                    <atomic-result-field
+                      label="Type"
+                      field="poketype"
+                    ></atomic-result-field>
+                    <atomic-result-field
+                      label="Generation"
+                      field="pokegen"
+                    ></atomic-result-field>
+                    <atomic-result-field
+                      label="Species"
+                      field="pokespecies"
+                    ></atomic-result-field>
+                    <atomic-result-field
+                      label="Height"
+                      field="pokeheight"
+                    ></atomic-result-field>
+                    <atomic-result-field
+                      label="Weight"
+                      field="pokeweight"
+                    ></atomic-result-field>
+                  </atomic-result-fields-list>
+
+                  <atomic-result-link></atomic-result-link>
+                </div>
+              </template>
+            </atomic-result-template>
+          </atomic-result-list>
+
+          <atomic-query-error></atomic-query-error>
+          <atomic-no-results></atomic-no-results>
+          <atomic-load-more-results></atomic-load-more-results>
+        </div>
+      </div>
     </atomic-search-interface>
   </div>
+
+  <script type="module">
+    (async () => {
+      await customElements.whenDefined('atomic-search-interface');
+      const searchInterface = document.querySelector('#search');
+      await searchInterface.initialize({
+        accessToken: 'xxe671c8e7-ae8d-42c9-9c04-af5ad6298406',
+        organizationId: 'arielepokemonchallengew9rn4rh5'
+      });
+      searchInterface.executeFirstSearch();
+    })();
+  </script>
 </body>
 </html>
