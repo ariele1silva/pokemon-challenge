@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,26 +10,73 @@
   <script type="module" src="https://static.cloud.coveo.com/atomic/latest/atomic.esm.js"></script>
   <link rel="stylesheet" href="https://static.cloud.coveo.com/atomic/latest/themes/coveo.css" />
 
+  <!-- Cute rounded fonts for the kawaii theme -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Quicksand:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
   <style>
+    /* ---- Kawaii palette, mapped onto Atomic's own theming variables ---- */
+    /* This re-colors the native Atomic components (search box, facets,
+       buttons, etc.) since these CSS variables are read across the
+       shadow DOM boundary by the library itself. */
+    :root {
+      --atomic-primary: #ff6fa5;
+      --atomic-primary-light: #ffa6cd;
+      --atomic-primary-dark: #d94c85;
+      --atomic-on-primary: #ffffff;
+      --atomic-ring-primary: rgba(255, 111, 165, 0.35);
+      --atomic-background: #fff8fb;
+      --atomic-on-background: #6b4a63;
+      --atomic-neutral: #ffe1ee;
+      --atomic-neutral-dim: #f3c6dd;
+      --atomic-neutral-light: #fff0f7;
+      --atomic-neutral-lighter: #fff8fb;
+      --atomic-neutral-dark: #9b7690;
+      --atomic-primary-background: #ffeaf3;
+      --atomic-border-radius: 1rem;
+      --atomic-border-radius-md: 1.25rem;
+      --atomic-border-radius-lg: 1.5rem;
+      --atomic-border-radius-xl: 2rem;
+      --atomic-font-family: "Quicksand", "Baloo 2", sans-serif;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f5f5f5;
+      font-family: "Quicksand", sans-serif;
+      background: linear-gradient(160deg, #ffe6f2 0%, #f3e6ff 45%, #e6f3ff 100%);
+      min-height: 100vh;
+      color: #6b4a63;
     }
+
     header {
-      background: #2c2c54;
+      background: linear-gradient(90deg, #ff8fc0 0%, #c99bff 100%);
       color: white;
-      padding: 16px 24px;
+      padding: 20px 28px;
+      box-shadow: 0 4px 14px rgba(217, 76, 133, 0.25);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     header h1 {
       margin: 0;
-      font-size: 22px;
+      font-family: "Baloo 2", "Quicksand", sans-serif;
+      font-size: 26px;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
     }
+    header .sparkle {
+      font-size: 26px;
+    }
+
     .app-container {
-      padding: 16px 24px;
+      padding: 20px 28px 48px;
     }
     .search-row {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     .search-body {
       display: flex;
@@ -36,7 +84,11 @@
       align-items: flex-start;
     }
     .facets-column {
-      flex: 0 0 240px;
+      flex: 0 0 250px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 1.25rem;
+      padding: 16px;
+      box-shadow: 0 4px 16px rgba(201, 155, 255, 0.18);
     }
     .results-column {
       flex: 1;
@@ -45,21 +97,58 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       flex-wrap: wrap;
       gap: 8px;
+      font-family: "Baloo 2", sans-serif;
+      color: #a15c8a;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Pokédex Search</h1>
+    <span class="sparkle">🌸</span>
+    <h1>Pokédex Search ✨</h1>
+    <span class="sparkle">🎀</span>
   </header>
 
   <div class="app-container">
     <atomic-search-interface id="search">
       <div class="search-row">
-        <atomic-search-box></atomic-search-box>
+        <atomic-search-box>
+          <atomic-search-box-instant-results image-size="small">
+            <atomic-result-template>
+              <template>
+                <style>
+                  .instant-poke {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                  }
+                  .instant-poke img {
+                    max-width: 36px;
+                    max-height: 36px;
+                  }
+                </style>
+                <div class="instant-poke">
+                  <atomic-result-section-visual>
+                    <atomic-field-condition if-defined="pokepic">
+                      <atomic-result-image
+                        field="pokepic"
+                        alt="Pokémon artwork"
+                      ></atomic-result-image>
+                    </atomic-field-condition>
+                  </atomic-result-section-visual>
+                  <atomic-result-section-title>
+                    <atomic-result-link>
+                      <atomic-result-text field="pokename"></atomic-result-text>
+                    </atomic-result-link>
+                  </atomic-result-section-title>
+                </div>
+              </template>
+            </atomic-result-template>
+          </atomic-search-box-instant-results>
+        </atomic-search-box>
       </div>
 
       <div class="search-body">
@@ -95,6 +184,11 @@
 
           <atomic-breadbox></atomic-breadbox>
 
+          <atomic-results-per-page
+            choices-displayed="12"
+            initial-choice="12"
+          ></atomic-results-per-page>
+
           <atomic-result-list
             display="grid"
             image-size="small"
@@ -108,55 +202,75 @@
                     flex-direction: column;
                     align-items: center;
                     text-align: center;
-                    padding: 12px;
+                    padding: 16px 12px;
+                    font-family: "Quicksand", sans-serif;
+                    background: linear-gradient(160deg, #fff 0%, #fff0f7 100%);
+                    border: 2px solid #ffd3e8;
+                    border-radius: 1.25rem;
+                    box-shadow: 0 4px 12px rgba(255, 143, 192, 0.2);
+                    transition: transform 0.15s ease, box-shadow 0.15s ease;
+                  }
+                  .poke-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 8px 18px rgba(255, 111, 165, 0.32);
                   }
                   .poke-card img {
                     max-width: 120px;
                     max-height: 120px;
+                    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
                   }
                   .poke-card .poke-name {
-                    font-weight: bold;
-                    font-size: 16px;
+                    font-family: "Baloo 2", sans-serif;
+                    font-weight: 700;
+                    font-size: 17px;
                     margin-top: 8px;
+                    color: #d94c85;
+                  }
+                  .poke-card .poke-description {
+                    font-size: 13px;
+                    color: #a15c8a;
+                    margin-top: 4px;
                   }
                 </style>
                 <div class="poke-card">
-                  <atomic-field-condition if-defined="pokepic">
-                    <atomic-result-image
-                      field="pokepic"
-                      alt="Pokémon artwork"
-                    ></atomic-result-image>
-                  </atomic-field-condition>
+                  <atomic-result-section-visual>
+                    <atomic-field-condition if-defined="pokepic">
+                      <atomic-result-image
+                        field="pokepic"
+                        alt="Pokémon artwork"
+                      ></atomic-result-image>
+                    </atomic-field-condition>
+                  </atomic-result-section-visual>
 
-                  <div class="poke-name">
-                    <atomic-result-text field="pokename"></atomic-result-text>
-                    (#<atomic-result-number field="pokedexnumber"></atomic-result-number>)
+                  <atomic-result-section-title>
+                    <atomic-result-link>
+                      <span class="poke-name">
+                        <atomic-result-text field="pokename"></atomic-result-text>
+                        (#<atomic-result-number field="pokedexnumber"></atomic-result-number>)
+                      </span>
+                    </atomic-result-link>
+                  </atomic-result-section-title>
+
+                  <div class="poke-description">
+                    <atomic-result-text field="pokespecies"></atomic-result-text>
+                    &nbsp;•&nbsp;Height:
+                    <atomic-result-text field="pokeheight"></atomic-result-text>
+                    &nbsp;•&nbsp;Weight:
+                    <atomic-result-text field="pokeweight"></atomic-result-text>
                   </div>
 
-                  <atomic-result-fields-list>
-                    <atomic-result-field
-                      label="Type"
-                      field="poketype"
-                    ></atomic-result-field>
-                    <atomic-result-field
-                      label="Generation"
-                      field="pokegen"
-                    ></atomic-result-field>
-                    <atomic-result-field
-                      label="Species"
-                      field="pokespecies"
-                    ></atomic-result-field>
-                    <atomic-result-field
-                      label="Height"
-                      field="pokeheight"
-                    ></atomic-result-field>
-                    <atomic-result-field
-                      label="Weight"
-                      field="pokeweight"
-                    ></atomic-result-field>
-                  </atomic-result-fields-list>
-
-                  <atomic-result-link></atomic-result-link>
+                  <atomic-result-section-bottom-metadata>
+                    <atomic-result-fields-list>
+                      <atomic-result-field
+                        label="Type"
+                        field="poketype"
+                      ></atomic-result-field>
+                      <atomic-result-field
+                        label="Generation"
+                        field="pokegen"
+                      ></atomic-result-field>
+                    </atomic-result-fields-list>
+                  </atomic-result-section-bottom-metadata>
                 </div>
               </template>
             </atomic-result-template>
