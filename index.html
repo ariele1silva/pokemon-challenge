@@ -316,6 +316,54 @@
     })();
   </script>
   <script>
+    // RGA (atomic-generated-answer) will happily synthesize an answer for
+    // any query, question-shaped or not, since it just checks whether the
+    // retrieved passages are relevant enough. To keep it from *displaying*
+    // one for plain keyword lookups like "eevee", we gate visibility only
+    // -- via a plain CSS display toggle on the host element -- and we no
+    // longer touch the component's own enabled/visible/answer state at
+    // all.
+    //
+    // Two earlier attempts were tried and rolled back:
+    // 1) `atomic-generated-answer`'s own `generatedAnswer` controller
+    //    (.enable()/.disable()) is a plain internal class field, not a
+    //    Stencil @Prop, so it's never forwarded onto the DOM element --
+    //    reading it from outside is always undefined.
+    // 2) Dispatching the underlying Redux actions
+    //    ('generatedAnswer/setIsEnabled', 'setIsVisible', 'resetAnswer')
+    //    directly against the shared engine does reach the real state, but
+    //    it fights the component's own `componentWillUpdate`, which
+    //    unconditionally re-enables itself on every re-render when no tab
+    //    restriction is configured. That tug-of-war left the disabled
+    //    state sticking around at the wrong moments -- including, on the
+    //    last test, blocking generation for a legitimate follow-up
+    //    question. Since correctness of *generation* matters more than
+    //    saving an occasional backend call, we stopped touching that state
+    //    entirely.
+    //
+    // Leaving isEnabled/isVisible/the answer state alone means RGA always
+    // generates exactly as it did before any of this gating existed (so a
+    // real question always works), and we purely mask the *display* of
+    // the host element for queries that don't look like questions.
+    function looksLikeQuestion(query) {
+      const q = (query || '').trim();
+      if (!q) return false;
+      if (q.endsWith('?')) return true;
+      return /^(who|what|when|where|why|how|which|whom|whose|can|could|does|do|did|is|are|was|were|will|would|should|has|have|had)\b/i.test(
+        q
+      );
+    }
+    function updateGeneratedAnswerVisibility() {
+      const searchInterface = document.querySelector('#search');
+      const generatedAnswerEl = document.querySelector('atomic-generated-answer');
+      const engine = searchInterface && searchInterface.engine;
+      if (!engine || !generatedAnswerEl) return;
+      const currentQuery = engine.state.query?.q ?? '';
+      generatedAnswerEl.style.display = looksLikeQuestion(currentQuery) ? '' : 'none';
+    }
+    setInterval(updateGeneratedAnswerVisibility, 150);
+  </script>
+  <script>
     // Some Pokémon (mostly very recently added ones) don't have official
     // "large artwork" published on pokemondb yet, so the image URL we
     // computed at index time 404s. Rather than jumping straight to a
