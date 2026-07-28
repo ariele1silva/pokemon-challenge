@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -308,10 +309,13 @@
 
   <script>
     // Some Pokémon (mostly very recently added ones) don't have official
-    // artwork published on pokemondb yet, so the image URL we computed at
-    // index time 404s. Atomic's result-image renders inside nested shadow
-    // DOM trees, so we recursively look through them and swap any broken
-    // <img> for a cute placeholder instead of leaving a broken-image icon.
+    // "large artwork" published on pokemondb yet, so the image URL we
+    // computed at index time 404s. Rather than jumping straight to a
+    // placeholder, first try pokemondb's "Home" sprite for the same
+    // Pokémon (a smaller but real image that reliably exists even for
+    // brand-new additions) and only fall back to the placeholder if that
+    // fails too. Atomic's result-image renders inside nested shadow DOM
+    // trees, so we recursively look through them to find every <img>.
     const POKE_PLACEHOLDER =
       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='56' fill='%23ffe1ee' stroke='%23ff9dc4' stroke-width='4'/%3E%3Ctext x='60' y='80' font-size='56' font-family='Baloo 2, sans-serif' font-weight='700' fill='%23ff6fa5' text-anchor='middle'%3E%3F%3C/text%3E%3C/svg%3E";
 
@@ -324,26 +328,43 @@
       });
     }
 
+    function slugFromArtworkUrl(url) {
+      const match = url.match(/\/artwork\/large\/([^/]+)\.jpg(?:$|\?)/i);
+      return match ? match[1] : null;
+    }
+
+    function applyImageFallback(img) {
+      const stage = img.dataset.pokeFallbackStage || 'artwork';
+      if (stage === 'artwork') {
+        const slug = slugFromArtworkUrl(img.src);
+        if (slug) {
+          img.dataset.pokeFallbackStage = 'sprite';
+          img.src = 'https://img.pokemondb.net/sprites/home/normal/2x/' + slug + '.jpg';
+          return;
+        }
+      }
+      img.dataset.pokeFallbackStage = 'placeholder';
+      img.src = POKE_PLACEHOLDER;
+    }
+
     function wireBrokenImageFallbacks() {
       const images = [];
       findAllImages(document, images);
       images.forEach((img) => {
-        if (img.src === POKE_PLACEHOLDER) return;
+        if (img.dataset.pokeFallbackStage === 'placeholder') return;
 
         // Catches images that already finished failing before this scan
         // ever reached them (a real-world timing gap: if the 404 resolves
         // faster than our polling interval, an "error" listener attached
         // afterward never fires, since the event already fired-and-gone).
         if (img.complete && img.naturalWidth === 0 && img.src) {
-          img.src = POKE_PLACEHOLDER;
+          applyImageFallback(img);
           return;
         }
 
         if (img.dataset.pokeFallbackWired) return;
         img.dataset.pokeFallbackWired = 'true';
-        img.addEventListener('error', () => {
-          img.src = POKE_PLACEHOLDER;
-        });
+        img.addEventListener('error', () => applyImageFallback(img));
       });
     }
 
