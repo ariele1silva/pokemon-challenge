@@ -328,6 +328,17 @@
       const images = [];
       findAllImages(document, images);
       images.forEach((img) => {
+        if (img.src === POKE_PLACEHOLDER) return;
+
+        // Catches images that already finished failing before this scan
+        // ever reached them (a real-world timing gap: if the 404 resolves
+        // faster than our polling interval, an "error" listener attached
+        // afterward never fires, since the event already fired-and-gone).
+        if (img.complete && img.naturalWidth === 0 && img.src) {
+          img.src = POKE_PLACEHOLDER;
+          return;
+        }
+
         if (img.dataset.pokeFallbackWired) return;
         img.dataset.pokeFallbackWired = 'true';
         img.addEventListener('error', () => {
