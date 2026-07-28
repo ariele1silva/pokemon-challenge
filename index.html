@@ -5,11 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pokédex Search</title>
-
   <!-- Coveo Atomic library (confirmed working CDN path, loaded as an ES module) -->
   <script type="module" src="https://static.cloud.coveo.com/atomic/v3.33.3/atomic.esm.js"></script>
   <link rel="stylesheet" href="https://static.cloud.coveo.com/atomic/v3.33.3/themes/coveo.css" />
-
   <!-- Cute rounded fonts for the kawaii theme -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,7 +15,6 @@
     href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Quicksand:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   />
-
   <style>
     /* ---- Kawaii palette, mapped onto Atomic's own theming variables ---- */
     /* This re-colors the native Atomic components (search box, facets,
@@ -43,7 +40,6 @@
       --atomic-border-radius-xl: 2rem;
       --atomic-font-family: "Quicksand", "Baloo 2", sans-serif;
     }
-
     body {
       margin: 0;
       font-family: "Quicksand", sans-serif;
@@ -51,7 +47,6 @@
       min-height: 100vh;
       color: #6b4a63;
     }
-
     header {
       background: linear-gradient(90deg, #ff8fc0 0%, #c99bff 100%);
       color: white;
@@ -71,7 +66,6 @@
     header .sparkle {
       font-size: 26px;
     }
-
     .app-container {
       padding: 20px 28px 48px;
     }
@@ -111,7 +105,6 @@
     <h1>Pokédex Search ✨</h1>
     <span class="sparkle">🎀</span>
   </header>
-
   <div class="app-container">
     <atomic-search-interface id="search">
       <div class="search-row">
@@ -151,7 +144,6 @@
           </atomic-search-box-instant-results>
         </atomic-search-box>
       </div>
-
       <div class="search-body">
         <div class="facets-column">
           <atomic-facet-manager>
@@ -167,10 +159,8 @@
             ></atomic-facet>
           </atomic-facet-manager>
         </div>
-
         <div class="results-column">
           <atomic-generated-answer></atomic-generated-answer>
-
           <div class="status-row">
             <atomic-query-summary></atomic-query-summary>
             <atomic-sort-dropdown>
@@ -192,14 +182,11 @@
               ></atomic-sort-expression>
             </atomic-sort-dropdown>
           </div>
-
           <atomic-breadbox></atomic-breadbox>
-
           <atomic-results-per-page
             choices-displayed="12"
             initial-choice="12"
           ></atomic-results-per-page>
-
           <atomic-result-list
             display="grid"
             image-size="small"
@@ -252,7 +239,6 @@
                       ></atomic-result-image>
                     </atomic-field-condition>
                   </atomic-result-section-visual>
-
                   <atomic-result-section-title>
                     <atomic-result-link>
                       <span class="poke-name">
@@ -261,7 +247,6 @@
                       </span>
                     </atomic-result-link>
                   </atomic-result-section-title>
-
                   <div class="poke-description">
                     <atomic-result-text field="pokespecies"></atomic-result-text>
                     &nbsp;•&nbsp;Height:
@@ -269,7 +254,6 @@
                     &nbsp;•&nbsp;Weight:
                     <atomic-result-text field="pokeweight"></atomic-result-text>
                   </div>
-
                   <atomic-result-section-bottom-metadata>
                     <atomic-result-fields-list>
                       <atomic-result-field
@@ -286,7 +270,6 @@
               </template>
             </atomic-result-template>
           </atomic-result-list>
-
           <atomic-query-error></atomic-query-error>
           <atomic-no-results></atomic-no-results>
           <atomic-load-more-results></atomic-load-more-results>
@@ -294,7 +277,6 @@
       </div>
     </atomic-search-interface>
   </div>
-
   <script type="module">
     (async () => {
       await customElements.whenDefined('atomic-search-interface');
@@ -306,7 +288,6 @@
       searchInterface.executeFirstSearch();
     })();
   </script>
-
   <script>
     // Some Pokémon (mostly very recently added ones) don't have official
     // "large artwork" published on pokemondb yet, so the image URL we
@@ -318,7 +299,6 @@
     // trees, so we recursively look through them to find every <img>.
     const POKE_PLACEHOLDER =
       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='56' fill='%23ffe1ee' stroke='%23ff9dc4' stroke-width='4'/%3E%3Ctext x='60' y='80' font-size='56' font-family='Baloo 2, sans-serif' font-weight='700' fill='%23ff6fa5' text-anchor='middle'%3E%3F%3C/text%3E%3C/svg%3E";
-
     function findAllImages(root, found) {
       root.querySelectorAll('img').forEach((img) => found.push(img));
       root.querySelectorAll('*').forEach((el) => {
@@ -327,12 +307,10 @@
         }
       });
     }
-
     function slugFromArtworkUrl(url) {
       const match = url.match(/\/artwork\/large\/([^/]+)\.jpg(?:$|\?)/i);
       return match ? match[1] : null;
     }
-
     function applyImageFallback(img) {
       const stage = img.dataset.pokeFallbackStage || 'artwork';
       if (stage === 'artwork') {
@@ -346,13 +324,11 @@
       img.dataset.pokeFallbackStage = 'placeholder';
       img.src = POKE_PLACEHOLDER;
     }
-
     function wireBrokenImageFallbacks() {
       const images = [];
       findAllImages(document, images);
       images.forEach((img) => {
         if (img.dataset.pokeFallbackStage === 'placeholder') return;
-
         // Catches images that already finished failing before this scan
         // ever reached them (a real-world timing gap: if the 404 resolves
         // faster than our polling interval, an "error" listener attached
@@ -361,14 +337,47 @@
           applyImageFallback(img);
           return;
         }
-
         if (img.dataset.pokeFallbackWired) return;
         img.dataset.pokeFallbackWired = 'true';
         img.addEventListener('error', () => applyImageFallback(img));
       });
     }
-
     setInterval(wireBrokenImageFallbacks, 500);
+  </script>
+  <script>
+    // In Atomic v3.33.3, atomic-result-text / atomic-result-number /
+    // atomic-result-image render empty when used inside a *custom*
+    // atomic-result-template, even though the "field" attribute is set
+    // correctly in the HTML and the components are properly registered.
+    // This looks like a case where the field attribute isn't triggering
+    // the component's internal reactive update after it upgrades inside
+    // a cloned template. As a workaround, we poll for these elements
+    // (including inside nested shadow DOM, same approach as the image
+    // fallback logic above) and explicitly re-assign the "field" property
+    // from its attribute, which forces the component to re-run its normal
+    // update/render cycle.
+    function findResultFieldElements(root, found) {
+      root
+        .querySelectorAll('atomic-result-text, atomic-result-number, atomic-result-image')
+        .forEach((el) => found.push(el));
+      root.querySelectorAll('*').forEach((el) => {
+        if (el.shadowRoot) {
+          findResultFieldElements(el.shadowRoot, found);
+        }
+      });
+    }
+    function reviveResultFieldBindings() {
+      const elements = [];
+      findResultFieldElements(document, elements);
+      elements.forEach((el) => {
+        const fieldAttr = el.getAttribute('field');
+        if (!fieldAttr) return;
+        if (el.field !== fieldAttr) {
+          el.field = fieldAttr;
+        }
+      });
+    }
+    setInterval(reviveResultFieldBindings, 400);
   </script>
 </body>
 </html>
