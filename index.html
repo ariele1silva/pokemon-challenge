@@ -111,7 +111,10 @@
     <span class="sparkle">🎀</span>
   </header>
   <div class="app-container">
-    <atomic-search-interface id="search">
+    <atomic-search-interface
+      id="search"
+      fields-to-include='["pokename","poketype","pokegen","pokeheight","pokeweight","pokespecies","pokedexnumber","pokepic"]'
+    >
       <div class="search-row">
         <atomic-search-box>
           <atomic-search-box-query-suggestions></atomic-search-box-query-suggestions>
@@ -195,7 +198,6 @@
           <atomic-result-list
             display="grid"
             image-size="small"
-            fields-to-include="pokename,poketype,pokegen,pokeheight,pokeweight,pokespecies,pokedexnumber,pokepic"
           >
             <atomic-result-template>
               <template>
