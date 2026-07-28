@@ -236,6 +236,23 @@
                     color: #a15c8a;
                     margin-top: 4px;
                   }
+                  .poke-card atomic-result-section-actions {
+                    margin-top: 10px;
+                  }
+                  .poke-card atomic-quickview::part(button) {
+                    font-family: "Baloo 2", sans-serif;
+                    font-weight: 700;
+                    font-size: 12px;
+                    color: #d94c85;
+                    background: #ffeaf3;
+                    border: 1.5px solid #ffb8d9;
+                    border-radius: 999px;
+                    padding: 5px 14px;
+                    cursor: pointer;
+                  }
+                  .poke-card atomic-quickview::part(button):hover {
+                    background: #ffd3e8;
+                  }
                 </style>
                 <div class="poke-card">
                   <atomic-result-section-visual>
@@ -273,6 +290,9 @@
                       ></atomic-result-field>
                     </atomic-result-fields-list>
                   </atomic-result-section-bottom-metadata>
+                  <atomic-result-section-actions>
+                    <atomic-quickview></atomic-quickview>
+                  </atomic-result-section-actions>
                 </div>
               </template>
             </atomic-result-template>
