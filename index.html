@@ -60,6 +60,8 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      cursor: pointer;
+      user-select: none;
     }
     header h1 {
       margin: 0;
@@ -105,7 +107,7 @@
   </style>
 </head>
 <body>
-  <header>
+  <header id="app-header" title="Reset search" role="button" tabindex="0">
     <span class="sparkle">🌸</span>
     <h1>Pokédex Search ✨</h1>
     <span class="sparkle">🎀</span>
@@ -173,12 +175,12 @@
             <atomic-query-summary></atomic-query-summary>
             <atomic-sort-dropdown>
               <atomic-sort-expression
-                label="relevance"
-                expression="relevancy"
-              ></atomic-sort-expression>
-              <atomic-sort-expression
                 label="Pokédex number"
                 expression="pokedexnumber ascending"
+              ></atomic-sort-expression>
+              <atomic-sort-expression
+                label="relevance"
+                expression="relevancy"
               ></atomic-sort-expression>
               <atomic-sort-expression
                 label="Name (A-Z)"
@@ -418,6 +420,29 @@
       });
     }
     setInterval(wireBrokenImageFallbacks, 500);
+  </script>
+  <script>
+    // Clicking the header acts like a "home" button: rather than reaching
+    // into the search box's or facets' internal headless state to clear
+    // each one individually (the exact kind of internal-state-fighting the
+    // RGA gating logic above went out of its way to avoid), we just
+    // navigate back to the page's own base URL. That's a full reload, so
+    // the search box, pagination, facets, and sort dropdown all come back
+    // in their original default state with zero risk of any one of them
+    // getting left out of sync.
+    function resetToHome() {
+      window.location.href = window.location.pathname;
+    }
+    const appHeader = document.querySelector('#app-header');
+    if (appHeader) {
+      appHeader.addEventListener('click', resetToHome);
+      appHeader.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          resetToHome();
+        }
+      });
+    }
   </script>
 </body>
 </html>
