@@ -307,6 +307,25 @@
     </atomic-search-interface>
   </div>
   <script type="module">
+    // Headless is pulled in directly (the same package Atomic itself is
+    // built on) purely to reach the Sort controller -- Atomic's own
+    // <atomic-sort-dropdown> doesn't expose "pick this sort automatically
+    // based on query state" as an attribute, only a static default. Pinned
+    // to the major-version CDN path Coveo's own docs use for this
+    // (https://docs.coveo.com/en/atomic/latest/usage/headless-through-atomic/);
+    // there's no published per-patch artifact to pin tighter the way
+    // atomic.esm.js below is pinned, but buildSort/buildFieldSortCriterion/
+    // buildRelevanceSortCriterion are long-stable, foundational Headless
+    // APIs, and staying within one major version is a real safeguard
+    // compared to the old `/latest/` alias that once silently froze on a
+    // year-old build (see the debugging notes).
+    import {
+      buildSort,
+      buildRelevanceSortCriterion,
+      buildFieldSortCriterion,
+      SortOrder
+    } from 'https://static.cloud.coveo.com/headless/v3/headless.esm.js';
+
     (async () => {
       await customElements.whenDefined('atomic-search-interface');
       const searchInterface = document.querySelector('#search');
@@ -315,6 +334,30 @@
         organizationId: 'arielepokemonchallengew9rn4rh5'
       });
       searchInterface.executeFirstSearch();
+
+      // Home (no query typed yet) always sorts by Pokédex number; the
+      // moment a real search happens it reverts to relevance, and it flips
+      // back to Pokédex number if the search box is cleared back to empty.
+      // Built as a real Sort controller against the shared engine -- the
+      // same mechanism <atomic-sort-dropdown> itself uses -- rather than
+      // reaching into that component's internal state, so it can't end up
+      // fighting the component the way the RGA gating notes below
+      // explicitly warn against. Manually picking a different sort (e.g.
+      // "Name (A-Z)") while searching is left alone until the next
+      // empty/non-empty transition.
+      const engine = searchInterface.engine;
+      const sort = buildSort(engine);
+      const pokedexSort = buildFieldSortCriterion('pokedexnumber', SortOrder.Ascending);
+      const relevanceSort = buildRelevanceSortCriterion();
+      let queryWasEmpty = null;
+      function syncSortToQueryState() {
+        const isEmpty = (engine.state.query?.q ?? '').trim() === '';
+        if (isEmpty === queryWasEmpty) return;
+        queryWasEmpty = isEmpty;
+        sort.sortBy(isEmpty ? pokedexSort : relevanceSort);
+      }
+      syncSortToQueryState();
+      engine.subscribe(syncSortToQueryState);
     })();
   </script>
   <script>
